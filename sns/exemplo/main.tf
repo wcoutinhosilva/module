@@ -1,7 +1,7 @@
 locals {
-  produto        = "antifraude"
-  nome_do_topico = "notificacoes"
-  ambiente       = "dev"
+  produto        = "nome_do_produto"
+  nome_do_topico = "nome_do_topico"
+  ambiente       = "dev/prod/hml"
   sqs_queue_arn  = "arn:aws:sqs:us-east-1:123456789012:minha-fila" # OPCIONAL: ARN da fila SQS
   tags = {
     Produto  = local.produto
