@@ -1,0 +1,97 @@
+# Módulo Terraform AWS SQS
+
+Este módulo cria filas SQS (Standard ou FIFO) na AWS, com suporte opcional a Dead Letter Queue (DLQ) e configurações flexíveis.
+
+## Recursos Criados
+
+- Fila SQS principal (Standard ou FIFO)
+- Fila DLQ (opcional, Standard ou FIFO)
+- Tags customizadas
+
+## Como Usar
+
+Crie um arquivo de main.tf, por exemplo: `sqs/exemplo/main.tf`:
+
+```hcl
+locals {
+  produto                     = "nome do produto"      # OBRIGATÓRIO
+  nome_da_fila                = "nome da fila"         # OBRIGATÓRIO
+  ambiente                    = "dev/prd/hml"          # OBRIGATÓRIO
+  delay_seconds               = 0                      # OPCIONAL
+  maximum_message_size        = 262144                 # OPCIONAL
+  message_retention_seconds   = 345600                 # OPCIONAL
+  visibility_timeout_seconds  = 30                     # OPCIONAL
+  receive_wait_time_seconds   = 0                      # OPCIONAL
+  fifo_queue                  = false                  # OPCIONAL
+  content_based_deduplication = false                  # OPCIONAL
+  sqs_dlq                     = true                   # OPCIONAL
+  tags = {
+    Produto    = local.produto
+    NomeDaFila = local.nome_da_fila
+    Ambiente   = local.ambiente
+  }
+}
+
+module "sqs" {
+  source                      = "../"
+  produto                     = local.produto
+  nome_da_fila                = local.nome_da_fila
+  ambiente                    = local.ambiente
+  sqs_dlq                     = local.sqs_dlq
+  tags                        = local.tags
+  delay_seconds               = local.delay_seconds
+  maximum_message_size        = local.maximum_message_size
+  message_retention_seconds   = local.message_retention_seconds
+  visibility_timeout_seconds  = local.visibility_timeout_seconds
+  receive_wait_time_seconds   = local.receive_wait_time_seconds
+  fifo_queue                  = local.fifo_queue
+  content_based_deduplication = local.content_based_deduplication
+}
+```
+
+## Variáveis Obrigatórias
+
+- `produto`: Nome do produto ou serviço responsável pela fila.
+- `nome_da_fila`: Nome base da fila SQS.
+- `ambiente`: Ambiente (ex: dev, prod, hml).
+
+## Variáveis Opcionais
+
+- `sqs_dlq`: Se `true`, cria uma DLQ associada à fila principal. Default: `false`.
+- `tags`: Tags para os recursos. Default: `{}`.
+- `delay_seconds`: Tempo de atraso para entrega das mensagens (segundos). Default: `0`.
+- `maximum_message_size`: Tamanho máximo da mensagem (bytes). Default: `262144`.
+- `message_retention_seconds`: Tempo de retenção das mensagens (segundos). Default: `345600`.
+- `visibility_timeout_seconds`: Timeout de visibilidade (segundos). Default: `30`.
+- `receive_wait_time_seconds`: Tempo de espera para long polling (segundos). Default: `0`.
+- `fifo_queue`: Define se a fila é FIFO (`true`) ou padrão (`false`). Default: `false`.
+- `content_based_deduplication`: Para FIFO: ativa deduplicação baseada no conteúdo da mensagem. Default: `false`.
+
+## Nomes das Filas
+
+- Standard: `<produto>-<nome_da_fila>-<ambiente>`
+- FIFO: `<produto>-<nome_da_fila>-<ambiente>.fifo`
+- DLQ: `<produto>-<nome_da_fila>-<ambiente>-dlq` ou `<produto>-<nome_da_fila>-<ambiente>-dlq.fifo` (se FIFO)
+
+## Outputs
+
+- `main_queue_url`: URL da fila principal.
+- `dlq_queue_url`: URL da DLQ (se criada).
+
+## Como Criar
+
+1. Configure seu arquivo de exemplo conforme acima.
+2. Execute os comandos Terraform:
+
+```sh
+terraform init
+terraform plan
+terraform apply
+```
+
+Pronto! Sua fila SQS será criada conforme os parâmetros informados.
+
+---
+
+**Dica:**  
+Você pode omitir variáveis opcionais para usar os valores
